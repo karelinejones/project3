@@ -12,6 +12,7 @@ public class project3_server {
         while (true){
             //accept the client connection request and establish dedicated channel with the new client
             //serveChannel represents this channel
+
             SocketChannel serveChannel = listenSocket.accept(); //whenever new request, accept it to establish channel, works with connect on client side
             ByteBuffer commandBuffer = ByteBuffer.allocate(2);
             int bytesRead = serveChannel.read(commandBuffer); //read client message
