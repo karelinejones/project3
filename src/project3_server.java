@@ -1,6 +1,10 @@
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.net.InetSocketAddress;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.time.LocalDateTime;
@@ -19,9 +23,9 @@ public class project3_server {
             ByteBuffer commandBuffer = ByteBuffer.allocate(2);
             int bytesRead = serveChannel.read(commandBuffer); //read client message
             commandBuffer.flip();
-            String command = String.valueOf(commandBuffer.getChar());
+            char command = commandBuffer.getChar();
             switch (command){
-                case "LIST":
+                case 'L': //or L
                     //commandBuffer = ByteBuffer.allocate(20);
                     //byte[] a = new byte[bytesRead];
                     //will send to default
@@ -34,7 +38,7 @@ public class project3_server {
                             clientMessage.append(name).append("\n");
                         }
                     } else {
-                        clientMessage.append("(No files found)\n");
+                        clientMessage.append("No files found\n");
                     }
 
                     System.out.println(clientMessage);
@@ -43,7 +47,7 @@ public class project3_server {
                     serveChannel.write(replyBuffer);
                     serveChannel.close();
                     break;
-                case "DELETE":
+                case 'D': //or D
                     ByteBuffer messageBuffer = ByteBuffer.allocate(1024); //this is for fileName
                     bytesRead = serveChannel.read(messageBuffer);
                     messageBuffer.flip();
@@ -67,7 +71,7 @@ public class project3_server {
                     serveChannel.write(replyBuffer);
                     serveChannel.close();
                     break;
-                case "RENAME":
+                case 'R': //or R
                     messageBuffer = ByteBuffer.allocate(1024); //this is for fileName
                     bytesRead = serveChannel.read(messageBuffer);
                     messageBuffer.flip();
@@ -92,12 +96,19 @@ public class project3_server {
                             } else {
                                 result = "File wasn't renamed."; // failed
                             }
+
+                        } else {
                             result = "Cannot find the file you want to rename.";
                         }
 
-
-
+                    } else {
+                        result = "Didn't give an old name and a new name.";
                     }
+                    replyBuffer = ByteBuffer.wrap(result.getBytes()); //we do these things, like udp
+                    serveChannel.write(replyBuffer);
+                    serveChannel.close();
+                    break;
+
                     /*
                     folder = new File(".");
                     fileNames = folder.list();
@@ -111,31 +122,75 @@ public class project3_server {
                     */
                     //match specific file like delete, then change its name in the folder
 
+                case 'O': //or O? N? Something
+                    ByteBuffer lengthBuffer = ByteBuffer.allocate(4); //filename length
+                    serveChannel.read(lengthBuffer);
+                    lengthBuffer.flip();
+                    int fileNameLength = lengthBuffer.getInt();
 
-                    break;
-                case "DOWNLOAD":
-                    messageBuffer = ByteBuffer.allocate(1024); //this is for fileName
-                    bytesRead = serveChannel.read(messageBuffer);
-                    messageBuffer.flip();
-                    a = new byte[bytesRead];
-                    messageBuffer.get(a);
-                    String moreClientMessage = new String(a);
+                    ByteBuffer nameBuffer = ByteBuffer.allocate(fileNameLength); //filename
+                    serveChannel.read(nameBuffer);
+                    nameBuffer.flip();
+                    String fileNameBStr = new String(nameBuffer.array());
 
-                    File filesInFolder = new File("." , moreClientMessage);
-                    if (filesInFolder.exists() && filesInFolder.isFile()) {
-                        //download the file off the server to the client somehow
+                    File file = new File("ServerFiles", fileNameBStr);
 
+                    if (file.exists() && file.isFile()) {
+                        serveChannel.write(ByteBuffer.wrap("S".getBytes()));
+
+                        FileInputStream fis2 = new FileInputStream(file);
+                        FileChannel fileChannel = fis2.getChannel();
+                        ByteBuffer downloadBuffer = ByteBuffer.allocate(1024);
+                        while (fileChannel.read(downloadBuffer) != -1) {
+                            downloadBuffer.flip();
+                            serveChannel.write(downloadBuffer);
+                            downloadBuffer.clear();
+                        }
+
+                        fileChannel.close();
+                        fis2.close();
                     } else {
-                        send = "F"; // file not found
+                        // File not found → failure code
+                        serveChannel.write(ByteBuffer.wrap("F".getBytes()));
                     }
+
+                    serveChannel.close();
                     break;
-                case "UPLOAD":
-                    //will need to take file length, name, content from the client
+
+                case 'U':
+
+                    ByteBuffer anotherLengthBuffer = ByteBuffer.allocate(4); //filename length
+                    serveChannel.read(anotherLengthBuffer);
+                    anotherLengthBuffer.flip();
+                    fileNameLength = anotherLengthBuffer.getInt();
 
 
+                    ByteBuffer fileNameBuffer = ByteBuffer.allocate(fileNameLength); //filename
+                    serveChannel.read(fileNameBuffer);
+                    fileNameBuffer.flip();
+                    String fileNameBufferStr = new String(fileNameBuffer.array());
 
+                    file = new File("ServerFiles", fileNameBufferStr);
+                    FileOutputStream fos = new FileOutputStream(file);
+                    FileChannel outChannel = fos.getChannel();
+
+                    ByteBuffer contentBuffer = ByteBuffer.allocate(1024);
+                    int bytesReadUpload;
+                    while ((bytesReadUpload = serveChannel.read(contentBuffer)) > 0) {
+                        contentBuffer.flip();
+                        outChannel.write(contentBuffer);
+                        contentBuffer.clear();
+                    }
+
+                    outChannel.close();
+                    fos.close();
+
+                    // Step 5: send status code back to client
+                    ByteBuffer status = ByteBuffer.wrap("S".getBytes()); // success
+                    serveChannel.write(status);
+                    serveChannel.close();
                     break;
-                case "QUIT":
+                case 'Q':
                     //String theClientMessage = "You quit.";
                     //System.out.println(theClientMessage); //we are just echoing the message back to the client
 
