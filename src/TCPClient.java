@@ -14,11 +14,11 @@ public class TCPClient {
     String input = keyboard.nextLine();
     char command;
     do {
-        System.out.println("Enter a command (List, Delete, Rename,Download, Upload, Quit):");
+        System.out.println("Enter a command (L for List, D for Delete, R for Rename, O for Download, U for Upload, Q for Quit):");
         String input = keyboard.nextLine();
         command = input.toUpperCase().charAt(0);
         switch (command) {
-            case 'List':
+            case 'L':
                 Scanner keyboard = new Scanner(System.in);
                 String input = keyboard.nextLine();
                 channel.connect(new InetSocketAddress(args[0], serverPort));
@@ -49,7 +49,8 @@ public class TCPClient {
                 commandBuffer.putChar(command);
                 commandBuffer.flip();
                 channel.write(commandBuffer);
-                channel.shutdownOutput();
+                break;
+            case 'D':
                 BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
                 String selectedFile = br.readLine();
                 File file = new File(selectedFile);
@@ -77,6 +78,11 @@ public class TCPClient {
                 commandBuffer.putChar(command);
                 commandBuffer.flip();
                 channel.write(commandBuffer);
+                break;
+            case 'R':
+                JFileChooser JFileChooser = new JFileChooser();
+                JFileChooser.setTitle("pick a file");
+                File selectedFile = fileChooser.showOpenDialog(primaryStage);
 
                 if (selectedFile != null) {
                     System.out.println("Selected file: " + selectedFile.getAbsolutePath());
@@ -100,6 +106,9 @@ public class TCPClient {
                 channel.connect(new InetSocketAddress(args[0], serverPort));
                 commandBuffer.putChar(command);
                 commandBuffer.flip();
+                channel.write(commandBuffer);
+                break;
+            case 'O':
 
                 ReadableByteChannel rbc = Channels.newChannel(in);
                 FileOutputStream fos = new FileOutputStream(outputFilePath)) {
@@ -111,11 +120,10 @@ public class TCPClient {
                 replyBuffer.get(a);
                 System.out.println(new String(a));
                 break;
-            case 'Upload':
-                System.out.println("Enter the name of the file you want to
-                        upload:");
-                String SelectedFile = keyboard.nextLine();
-                File file = new File("SelectedFile", SelectedFile);
+            case 'U':
+                JFileChooser JFileChooser = new JFileChooser();
+                JFileChooser.setTitle("pick a file");
+                File selectedFile = fileChooser.showOpenDialog(primaryStage);
 
                 if (selectedFile != null) {
                     System.out.println("Selected file: " + selectedFile.getAbsolutePath());
@@ -151,14 +159,13 @@ public class TCPClient {
                 replyBuffer.get(a);
                 System.out.println(new String(a));
                 break;
-                    case 'Quit':
-                    System.exit(0);
-                    channel.connect(new InetSocketAddress(args[0], serverPort));
-                    commandBuffer.putChar(command);
-                    commandBuffer.flip();
-                    channel.write(commandBuffer);
-                        break;
-
+            case 'Q':
+                System.exit(0);
+                channel.connect(new InetSocketAddress(args[0], serverPort));
+                commandBuffer.putChar(command);
+                commandBuffer.flip();
+                channel.write(commandBuffer);
+                break;
         }
     }
 }
