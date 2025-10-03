@@ -6,6 +6,9 @@ import java.util.Scanner;
 public class TCPClient {
     public static void main(String[] args) throws Exception {
 
+        if (args.length != 2) {
+            System.out.println("client commands for tcp server");
+            return;
 
     Scanner keyboard = new Scanner(System.in);
     String input = keyboard.nextLine();
@@ -18,6 +21,10 @@ public class TCPClient {
             case 'L':
                 Scanner keyboard = new Scanner(System.in);
                 String input = keyboard.nextLine();
+                channel.connect(new InetSocketAddress(args[0], serverPort));
+                commandBuffer.putChar(command);
+                commandBuffer.flip();
+                channel.write(commandBuffer);
 
                 java.io.ObjectInputStream = new ObjectInputStream(socket.getInputStream());
                 Map<String, String> commands = (Map<String, String>) in.readObject();
@@ -26,6 +33,18 @@ public class TCPClient {
                 for (Map.Entry<String, String> entry : commands.entrySet()) {
                     System.out.println("  " + entry.getKey() + ": " + entry.getValue());
                 }
+                bytesRead = channel.read(replyBuffer);
+                replyBuffer.flip();
+                a = new byte[bytesRead];
+                replyBuffer.get(a);
+                System.out.println(new String(a));
+
+
+                break;
+            case 'Delete':
+                System.out.println("pick the file you want to delete");
+                String SelectedFile = keyboard.nextLine();
+                File file = new File("SelectedFile", SelectedFile);
                 channel.connect(new InetSocketAddress(args[0], serverPort));
                 commandBuffer.putChar(command);
                 commandBuffer.flip();
@@ -33,12 +52,10 @@ public class TCPClient {
                 break;
             case 'D':
                 BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+                String selectedFile = br.readLine();
+                File file = new File(selectedFile);
 
-                JFileChooser JFileChooser = new JFileChooser();
-                JFileChooser.setTitle("pick a file");
-                File selectedFile = fileChooser.showOpenDialog(primaryStage);
-                String selecedFile = br.readLine();
-                File file = new File(selecedFile);
+                selectedFile = null;
 
                 if (file.delete()) {
                     System.out.println("File deleted");
@@ -46,6 +63,17 @@ public class TCPClient {
                 else {
                     System.out.println("Failed to delete file");
                 }
+                bytesRead = channel.read(replyBuffer);
+                replyBuffer.flip();
+                a = new byte[bytesRead];
+                replyBuffer.get(a);
+                System.out.println(new String(a));
+
+                break;
+            case 'Rename':
+                System.out.println("Enter the name of the file you want to upload:");
+                String SelectedFile = keyboard.nextLine();
+                File file = new File("SelectedFile", SelectedFile);
                 channel.connect(new InetSocketAddress(args[0], serverPort));
                 commandBuffer.putChar(command);
                 commandBuffer.flip();
@@ -63,6 +91,18 @@ public class TCPClient {
                 }
                 System.out.println("what name do you want to change it to?");
                 selectedFile.renameTo(new file(scanner.nextLine()));
+
+                bytesRead = channel.read(replyBuffer);
+                replyBuffer.flip();
+                a = new byte[bytesRead];
+                replyBuffer.get(a);
+                System.out.println(new String(a));
+                break;
+            case 'Download':
+                System.out.println("Enter the name of the file you want to
+                        upload:");
+                String SelectedFile = keyboard.nextLine();
+                File file = new File("SelectedFile", SelectedFile);
                 channel.connect(new InetSocketAddress(args[0], serverPort));
                 commandBuffer.putChar(command);
                 commandBuffer.flip();
@@ -70,6 +110,15 @@ public class TCPClient {
                 break;
             case 'O':
 
+                ReadableByteChannel rbc = Channels.newChannel(in);
+                FileOutputStream fos = new FileOutputStream(outputFilePath)) {
+                fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+
+                bytesRead = channel.read(replyBuffer);
+                replyBuffer.flip();
+                a = new byte[bytesRead];
+                replyBuffer.get(a);
+                System.out.println(new String(a));
                 break;
             case 'U':
                 JFileChooser JFileChooser = new JFileChooser();
@@ -85,6 +134,30 @@ public class TCPClient {
                 commandBuffer.putChar(command);
                 commandBuffer.flip();
                 channel.write(commandBuffer);
+                ByteBuffer lengthBuffer = ByteBuffer.allocate(4);
+                int fileNameLength = SelectedFile.length();
+                lengthBuffer.putInt(fileNameLength);
+                lengthBuffer.flip();
+                channel.write(lengthBuffer);
+                ByteBuffer nameBuffer = ByteBuffer.wrap(SelectedFile.getBytes());
+                channel.write(nameBuffer);
+               each time
+                FileInputStream fis = new FileInputStream(file);
+                FileChannel fc = fis.getChannel();
+                ByteBuffer contentBuffer = ByteBuffer.allocate(1024);
+                while(fc.read(contentBuffer) != -1) {
+                    contentBuffer.flip();
+                    channel.write(contentBuffer);
+                    contentBuffer.clear();
+                    use!
+                }
+                channel.shutdownOutput();
+                    fis.close();
+                bytesRead = channel.read(contentBuffer);
+                contentBuffer.flip();
+                a = new byte[bytesRead];
+                replyBuffer.get(a);
+                System.out.println(new String(a));
                 break;
             case 'Q':
                 System.exit(0);
