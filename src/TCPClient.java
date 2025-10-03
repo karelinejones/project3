@@ -6,6 +6,9 @@ import java.util.Scanner;
 public class TCPClient {
     public static void main(String[] args) throws Exception {
 
+        if (args.length != 2) {
+            System.out.println("client commands for tcp server");
+            return;
 
     Scanner keyboard = new Scanner(System.in);
     String input = keyboard.nextLine();
