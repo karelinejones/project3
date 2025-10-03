@@ -11,11 +11,11 @@ public class TCPClient {
     String input = keyboard.nextLine();
     char command;
     do {
-        System.out.println("Enter a command (List, Delete, Rename,Download, Upload, Quit):");
+        System.out.println("Enter a command (L for List, D for Delete, R for Rename, O for Download, U for Upload, Q for Quit):");
         String input = keyboard.nextLine();
         command = input.toUpperCase().charAt(0);
         switch (command) {
-            case 'List':
+            case 'L':
                 Scanner keyboard = new Scanner(System.in);
                 String input = keyboard.nextLine();
 
@@ -31,7 +31,7 @@ public class TCPClient {
                 commandBuffer.flip();
                 channel.write(commandBuffer);
                 break;
-            case 'Delete':
+            case 'D':
                 BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
                 JFileChooser JFileChooser = new JFileChooser();
@@ -51,7 +51,7 @@ public class TCPClient {
                 commandBuffer.flip();
                 channel.write(commandBuffer);
                 break;
-            case 'Rename':
+            case 'R':
                 JFileChooser JFileChooser = new JFileChooser();
                 JFileChooser.setTitle("pick a file");
                 File selectedFile = fileChooser.showOpenDialog(primaryStage);
@@ -68,10 +68,10 @@ public class TCPClient {
                 commandBuffer.flip();
                 channel.write(commandBuffer);
                 break;
-            case 'Download':
+            case 'O':
 
                 break;
-            case 'Upload':
+            case 'U':
                 JFileChooser JFileChooser = new JFileChooser();
                 JFileChooser.setTitle("pick a file");
                 File selectedFile = fileChooser.showOpenDialog(primaryStage);
@@ -86,14 +86,13 @@ public class TCPClient {
                 commandBuffer.flip();
                 channel.write(commandBuffer);
                 break;
-                    case 'Quit':
-                    System.exit(0);
-                    channel.connect(new InetSocketAddress(args[0], serverPort));
-                    commandBuffer.putChar(command);
-                    commandBuffer.flip();
-                    channel.write(commandBuffer);
-                        break;
-
+            case 'Q':
+                System.exit(0);
+                channel.connect(new InetSocketAddress(args[0], serverPort));
+                commandBuffer.putChar(command);
+                commandBuffer.flip();
+                channel.write(commandBuffer);
+                break;
         }
     }
 }
