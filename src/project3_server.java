@@ -74,6 +74,31 @@ public class project3_server {
                     a = new byte[bytesRead];
                     messageBuffer.get(a);
                     String anotherClientMessage = new String(a);
+
+                    //new
+                    String[] parts = anotherClientMessage.split(":", 2);
+                    String result;
+                    if (parts.length == 2) {
+                        String oldName = parts[0];
+                        String newName = parts[1];
+
+                        File oldFile = new File(".", oldName);
+                        File newFile = new File(".", newName);
+
+                        if (oldFile.exists() && oldFile.isFile()) {
+                            boolean renamed = oldFile.renameTo(newFile);
+                            if (renamed) {
+                                result = "File was renamed."; // success
+                            } else {
+                                result = "File wasn't renamed."; // failed
+                            }
+                            result = "Cannot find the file you want to rename.";
+                        }
+
+
+
+                    }
+                    /*
                     folder = new File(".");
                     fileNames = folder.list();
                     for (String name : fileNames) {
@@ -83,21 +108,40 @@ public class project3_server {
                             System.out.println("Testing that I didn't get the name");
                         }
                     }
+                    */
                     //match specific file like delete, then change its name in the folder
 
 
                     break;
                 case "DOWNLOAD":
+                    messageBuffer = ByteBuffer.allocate(1024); //this is for fileName
+                    bytesRead = serveChannel.read(messageBuffer);
+                    messageBuffer.flip();
+                    a = new byte[bytesRead];
+                    messageBuffer.get(a);
+                    String moreClientMessage = new String(a);
+
+                    File filesInFolder = new File("." , moreClientMessage);
+                    if (filesInFolder.exists() && filesInFolder.isFile()) {
+                        //download the file off the server to the client somehow
+
+                    } else {
+                        send = "F"; // file not found
+                    }
                     break;
                 case "UPLOAD":
+                    //will need to take file length, name, content from the client
+
+
+
                     break;
                 case "QUIT":
-                    String theClientMessage = "You quit.";
-                    System.out.println(theClientMessage); //we are just echoing the message back to the client
+                    //String theClientMessage = "You quit.";
+                    //System.out.println(theClientMessage); //we are just echoing the message back to the client
 
-                    replyBuffer = ByteBuffer.wrap(theClientMessage.getBytes()); //we do these things, like udp
-                    serveChannel.write(replyBuffer);
-                    serveChannel.close();
+                    //replyBuffer = ByteBuffer.wrap(theClientMessage.getBytes()); //we do these things, like udp
+                    //serveChannel.write(replyBuffer);
+                    //serveChannel.close();
                     break;
                 /*
                 case 'D': //not hard, just need to reply
