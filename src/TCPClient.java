@@ -1,15 +1,16 @@
-import javax.swing.*;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Scanner;
 
 import static java.lang.System.in;
+import static java.nio.file.Files.write;
 
 public class TCPClient {
-    public static void main(String[] args) throws Exception {
+    static void main(String[] args) throws Exception {
 
         if (args.length != 2) {
             System.out.println("client commands for tcp server");
@@ -17,9 +18,9 @@ public class TCPClient {
             int serverPort;
     Scanner keyboard = new Scanner(in);
     String input = keyboard.nextLine();
-    int command;
+    char command;
     do {
-        System.out.println("Enter a command (List, Delete, Rename,Download, Upload, Quit):");
+        System.out.println("Enter a command (L, D, R,D, U, Q):");
         input = keyboard.nextLine();
         command = input.toUpperCase().charAt(0);
         int serverPort1 = serverPort;
@@ -27,35 +28,35 @@ public class TCPClient {
             case "L":
                 keyboard = new Scanner(in);
                 input = keyboard.nextLine();
-                SocketChannel channel;
+                SocketChannel channel = null;
                 try {
                     channel.connect(new InetSocketAddress(args[0],
                             serverPort1));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                ByteBuffer commandBuffer;
-                commandBuffer.putChar((char) command);
+                ByteBuffer commandBuffer = null;
+                commandBuffer.putChar(command);
                 commandBuffer.flip();
                 try {
                     channel.write(commandBuffer);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                Map<String, String> commands = (Map<String, String>) in.readNBytes();
+                Map<String, String> commands;
+                commands = (Map<String, String>) (in);
 
                 System.out.println("Available Commands:");
                 for (Map.Entry<String, String> entry : commands.entrySet()) {
                     System.out.println("  " + entry.getKey() + ": " + entry.getValue());
                 }
-                command = channel.read(
-                commandBuffer.flip();
+                command = (char) channel.read(commandBuffer);
                 byte[] a = new byte[command];
                 commandBuffer.get(a);
                 System.out.println(new String(a));
 
 
-                break;
+          ;      break;
             case "D":
                 System.out.println("pick the file you want to delete");
                 String SelectedFile = keyboard.nextLine();
@@ -65,7 +66,7 @@ public class TCPClient {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                commandBuffer.putChar((char) command);
+                commandBuffer.putChar(command);
                 commandBuffer.flip();
                 try {
                     channel.write(commandBuffer);
@@ -78,7 +79,7 @@ public class TCPClient {
                     throw new RuntimeException(e);
                 }
                 BufferedReader br = new BufferedReader(new InputStreamReader(in));
-                String selectedFile;
+                String selectedFile = "";
                 selectedFile = null;
                 try {
                     selectedFile = br.readLine();
@@ -95,7 +96,7 @@ public class TCPClient {
                 else {
                     System.out.println("Failed to delete file");
                 }
-                command = channel.read(commandBuffer);
+                command = (char) channel.read(commandBuffer);
                 commandBuffer.flip();
                 a = new byte[command];
                 commandBuffer.get(a);
@@ -103,23 +104,20 @@ public class TCPClient {
 
                 break;
             case "R":
-                System.out.println("Enter the name of the file you want to upload:");
+                System.out.println("Enter the name of the file you want to rename:");
                 SelectedFile = keyboard.nextLine();
                 file = new File("SelectedFile", SelectedFile);
                 channel.connect(new InetSocketAddress(args[0], serverPort1));
-                commandBuffer.putChar((char) command);
+                commandBuffer.putChar(command);
                 commandBuffer.flip();
                 channel.write(commandBuffer);
-
-                if (selectedFile != null) {
-                    System.out.println("Selected file: " + selectedFile.getBytes());
-                } else {
-                    System.out.println("File selection cancelled.");
-                }
+                String filename;
                 System.out.println("what name do you want to change it to?");
-                selectedFile.renameTo(new file(scanner.nextLine()));
+                File renameFile = new File(keyboard.nextLine());
+                renameFile = new File(String.valueOf(file));
+                renameFile.renameTo(new File(SelectedFile));
 
-                command = channel.read(commandBuffer);
+                command = (char) channel.read(commandBuffer);
                 commandBuffer.flip();
                 a = new byte[command];
                 commandBuffer.get(a);
@@ -128,33 +126,20 @@ public class TCPClient {
             case 'D':
                 System.out.println("Enter the name of the file you want to download:");
                 SelectedFile = keyboard.nextLine();
-                file = new File("SelectedFile", SelectedFile);
-                try {
-                    channel.connect(new InetSocketAddress(args[0], serverPort1));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
                 commandBuffer.putChar(command);
                 commandBuffer.flip();
+                channel = SocketChannel.open();
+                channel.connect(
+                        new InetSocketAddress(args[0], serverPort));
+                channel.write(commandBuffer);
+                channel.shutdownOutput();
+                ByteBuffer replyBuffer = ByteBuffer.allocate(1024);
+                int bytesRead = channel.read(replyBuffer);
+                file = new File("SelectedFile", SelectedFile);
+                Process socket = null;
+                InputStream inputStream = socket.getInputStream();
 
-                ReadableByteChannel rbc = Channels.newChannel(in);
                 FileOutputStream fos = null;
-                try {
-                fos = new FileOutputStream(file);
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            } {
-                try {
-                    fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-
-                try {
-                    command = channel.read(commandBuffer);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
                 commandBuffer.flip();
                 a = new byte[command];
                 commandBuffer.get(a);
@@ -165,23 +150,6 @@ public class TCPClient {
                 SelectedFile = keyboard.nextLine();
                 file = new File("SelectedFile", SelectedFile);
 
-                if (selectedFile != null) {
-                    System.out.println("Selected file: " + selectedFile.getBytes());
-                } else {
-                    System.out.println("File selection cancelled.");
-                }
-                try {
-                    channel.connect(new InetSocketAddress(args[0], serverPort1));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                commandBuffer.putChar((char) command);
-                commandBuffer.flip();
-                try {
-                    channel.write(commandBuffer);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
                 ByteBuffer lengthBuffer = ByteBuffer.allocate(4);
                 int fileNameLength = SelectedFile.length();
                 lengthBuffer.putInt(fileNameLength);
@@ -199,19 +167,22 @@ public class TCPClient {
                 }
                 channel.shutdownOutput();
                     fis.close();
-                command = channel.read(contentBuffer);
+                command = (char) channel.read(contentBuffer);
                 contentBuffer.flip();
                 a = new byte[command];
-                commandBuffer.get(a);
+                SelectedFile.getChars(a);
                 System.out.println(new String(a));
                 break;
             case 'Q':
                     System.exit(0);
-                    channel.connect(new InetSocketAddress(args[0], serverPort1));
-                    commandBuffer.putChar((char) command);
-                    commandBuffer.flip();
-                    channel.write(commandBuffer);
                         break;
 
-        }
-        }}}}}
+
+        default:
+                System.out.println("Invalid command, please try again.");
+            }
+
+        } while(command != 'Q');}
+
+    }
+}
