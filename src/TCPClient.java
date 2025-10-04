@@ -20,7 +20,7 @@ public class TCPClient {
     String input = keyboard.nextLine();
     char command;
     do {
-        System.out.println("Enter a command (L, D, R,D, U, Q):");
+        System.out.println("Enter a command (L for List, D for Delete, R for Rename, O for Download, U for Upload, Q for Quit.):");
         input = keyboard.nextLine();
         command = input.toUpperCase().charAt(0);
         int serverPort1 = serverPort;
@@ -123,7 +123,7 @@ public class TCPClient {
                 commandBuffer.get(a);
                 System.out.println(new String(a));
                 break;
-            case 'D':
+            case 'O':
                 System.out.println("Enter the name of the file you want to download:");
                 SelectedFile = keyboard.nextLine();
                 commandBuffer.putChar(command);

@@ -28,11 +28,9 @@ public class project3_server {
                 case 'L': //or L
                     //commandBuffer = ByteBuffer.allocate(20);
                     //byte[] a = new byte[bytesRead];
-                    //will send to default
                     File folder = new File(".");
                     String[] fileNames = folder.list();
                     StringBuilder clientMessage = new StringBuilder("Server Files: ");
-
                     if (fileNames != null && fileNames.length > 0) {
                         for (String name : fileNames) {
                             clientMessage.append(name).append("\n");
@@ -40,9 +38,7 @@ public class project3_server {
                     } else {
                         clientMessage.append("No files found\n");
                     }
-
                     System.out.println(clientMessage);
-
                     ByteBuffer replyBuffer = ByteBuffer.wrap(clientMessage.toString().getBytes()); //we do these things, like udp
                     serveChannel.write(replyBuffer);
                     serveChannel.close();
@@ -78,8 +74,6 @@ public class project3_server {
                     a = new byte[bytesRead];
                     messageBuffer.get(a);
                     String anotherClientMessage = new String(a);
-
-                    //new
                     String[] parts = anotherClientMessage.split(":", 2);
                     String result;
                     if (parts.length == 2) {
@@ -127,17 +121,13 @@ public class project3_server {
                     serveChannel.read(lengthBuffer);
                     lengthBuffer.flip();
                     int fileNameLength = lengthBuffer.getInt();
-
                     ByteBuffer nameBuffer = ByteBuffer.allocate(fileNameLength); //filename
                     serveChannel.read(nameBuffer);
                     nameBuffer.flip();
                     String fileNameBStr = new String(nameBuffer.array());
-
                     File file = new File("ServerFiles", fileNameBStr);
-
                     if (file.exists() && file.isFile()) {
                         serveChannel.write(ByteBuffer.wrap("S".getBytes()));
-
                         FileInputStream fis2 = new FileInputStream(file);
                         FileChannel fileChannel = fis2.getChannel();
                         ByteBuffer downloadBuffer = ByteBuffer.allocate(1024);
@@ -146,34 +136,25 @@ public class project3_server {
                             serveChannel.write(downloadBuffer);
                             downloadBuffer.clear();
                         }
-
                         fileChannel.close();
                         fis2.close();
                     } else {
-                        // File not found → failure code
                         serveChannel.write(ByteBuffer.wrap("F".getBytes()));
                     }
-
                     serveChannel.close();
                     break;
-
                 case 'U':
-
                     ByteBuffer anotherLengthBuffer = ByteBuffer.allocate(4); //filename length
                     serveChannel.read(anotherLengthBuffer);
                     anotherLengthBuffer.flip();
                     fileNameLength = anotherLengthBuffer.getInt();
-
-
                     ByteBuffer fileNameBuffer = ByteBuffer.allocate(fileNameLength); //filename
                     serveChannel.read(fileNameBuffer);
                     fileNameBuffer.flip();
                     String fileNameBufferStr = new String(fileNameBuffer.array());
-
                     file = new File("ServerFiles", fileNameBufferStr);
                     FileOutputStream fos = new FileOutputStream(file);
                     FileChannel outChannel = fos.getChannel();
-
                     ByteBuffer contentBuffer = ByteBuffer.allocate(1024);
                     int bytesReadUpload;
                     while ((bytesReadUpload = serveChannel.read(contentBuffer)) > 0) {
@@ -181,12 +162,9 @@ public class project3_server {
                         outChannel.write(contentBuffer);
                         contentBuffer.clear();
                     }
-
                     outChannel.close();
                     fos.close();
-
-                    // Step 5: send status code back to client
-                    ByteBuffer status = ByteBuffer.wrap("S".getBytes()); // success
+                    ByteBuffer status = ByteBuffer.wrap("S".getBytes());
                     serveChannel.write(status);
                     serveChannel.close();
                     break;
