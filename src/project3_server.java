@@ -156,8 +156,8 @@ public class project3_server {
                     FileOutputStream fos = new FileOutputStream(file);
                     FileChannel outChannel = fos.getChannel();
                     ByteBuffer contentBuffer = ByteBuffer.allocate(1024);
-                    int bytesReadUpload;
-                    while ((bytesReadUpload = serveChannel.read(contentBuffer)) > 0) {
+
+                    while ((serveChannel.read(contentBuffer)) != -1) {
                         contentBuffer.flip();
                         outChannel.write(contentBuffer);
                         contentBuffer.clear();
