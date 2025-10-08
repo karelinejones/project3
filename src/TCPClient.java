@@ -38,7 +38,7 @@ public class TCPClient {
                     commandBuffer.flip();
                     channel.write(commandBuffer);
 
-                    ByteBuffer replyBuffer = ByteBuffer.allocate(4096);
+                    ByteBuffer replyBuffer = ByteBuffer.allocate(5000);
                     int bytesRead = channel.read(replyBuffer);
                     replyBuffer.flip();
                     byte[] data = new byte[bytesRead];
