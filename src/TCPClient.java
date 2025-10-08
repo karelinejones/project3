@@ -13,7 +13,7 @@ public class TCPClient {
     public static void main(String[] args) throws Exception {
 
         if (args.length != 2) {
-            System.out.println("client commands for tcp server");
+            System.out.println("Usage: java TCP Client <serverHost> <serverPort>");
             return;
         }
         //int serverPort;
@@ -21,11 +21,11 @@ public class TCPClient {
         int serverPort = Integer.parseInt(args[1]);
 
         Scanner keyboard = new Scanner(in);
-        String input = keyboard.nextLine();
+        //String input = keyboard.nextLine();
         char command;
         do {
             System.out.println("Enter a command (L for List, D for Delete, R for Rename, O for Download, U for Upload, Q for Quit.):");
-            input = keyboard.nextLine();
+            String input = keyboard.nextLine();
             command = input.toUpperCase().charAt(0);
             int serverPort1 = serverPort;
             switch (command) {
@@ -48,36 +48,6 @@ public class TCPClient {
 
                     channel.close();
                     break;
-                    /*
-                    keyboard = new Scanner(in);
-                    input = keyboard.nextLine();
-                    SocketChannel channel = null;
-                    try {
-                        channel.connect(new InetSocketAddress(args[0],
-                                serverPort1));
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                    ByteBuffer commandBuffer = null;
-                    commandBuffer.putChar(command);
-                    commandBuffer.flip();
-                    try {
-                        channel.write(commandBuffer);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                    Map<String, String> commands;
-                    commands = (Map<String, String>) (in);
-
-                    System.out.println("Available Commands:");
-                    for (Map.Entry<String, String> entry : commands.entrySet()) {
-                        System.out.println("  " + entry.getKey() + ": " + entry.getValue());
-                    }
-                    command = (char) channel.read(commandBuffer);
-                    byte[] a = new byte[command];
-                    commandBuffer.get(a);
-                    System.out.println(new String(a));
-                     */
 
                 case 'D':
                     System.out.println("pick the file you want to delete");
@@ -106,8 +76,6 @@ public class TCPClient {
                         throw new RuntimeException(e);
                     }
                     //BufferedReader br = new BufferedReader(new InputStreamReader(in));
-                    //String selectedFile = "";
-                    //selectedFile = null;
                     String response;
                     try {
                         replyBuffer = ByteBuffer.allocate(16);
@@ -125,9 +93,9 @@ public class TCPClient {
                     //selectedFile = null;
 
                     if (response.equals("S")) {
-                        System.out.println("File deleted successfully on server.");
+                        System.out.println("operation sucessful");
                     } else {
-                        System.out.println("Failed to delete file on server.");
+                        System.out.println("operation failed");
                     }
                     channel.close();
                     break;
@@ -145,8 +113,6 @@ public class TCPClient {
                     System.out.println("what name do you want to change it to?");
                     String newName = keyboard.nextLine();
                     String both = selectedFile + ":" + newName;
-                    //File renameFile = new File(keyboard.nextLine());
-                    //renameFile = new File(String.valueOf(file));
                     //renameFile.renameTo(new File(SelectedFile));
                     ByteBuffer nameBuffer = ByteBuffer.wrap(both.getBytes());
                     channel.write(nameBuffer);
@@ -156,14 +122,9 @@ public class TCPClient {
                     replyBuffer2.flip();
                     byte[] a = new byte[bytesRead];
                     replyBuffer2.get(a);
-                    System.out.println("Server response: " + new String(a));
+                    System.out.println(new String(a));
 
                     channel.close();
-                    //command = (char) channel.read(commandBuffer);
-                    //commandBuffer.flip();
-                    //a = new byte[command];
-                    //commandBuffer.get(a);
-                    // System.out.println(new String(a));
                     break;
                 case 'O':
                     ByteBuffer commandBuffer2 = ByteBuffer.allocate(2);
@@ -219,20 +180,13 @@ public class TCPClient {
                     channel.close();
                     break;
 
-
-                //FileOutputStream fos = null;
-
-                //a = new byte[command];
-                //commandBuffer2.get(a);
-                //System.out.println(new String(a));
-
                 case 'U':
                     System.out.print("Enter file name to upload: ");
                     String fileName = keyboard.nextLine();
                     File file2 = new File("ClientFiles", fileName);
 
                     if (!file2.exists()) {
-                        System.out.println("File not found in ClientFiles.");
+                        System.out.println("File not found.");
                         break;
                     }
 
@@ -270,42 +224,9 @@ public class TCPClient {
 
                     channel.close();
                     break;
-                    /*
-                    System.out.println("Enter the name of the file you want to upload:");
-                    SocketChannel channel2 = SocketChannel.open();
-                    SelectedFile = keyboard.nextLine();
-                    file = new File("SelectedFile", SelectedFile);
-
-                    ByteBuffer lengthBuffer = ByteBuffer.allocate(4);
-                    int fileNameLength = SelectedFile.length();
-                    lengthBuffer.putInt(fileNameLength);
-                    lengthBuffer.flip();
-                    channel2.write(lengthBuffer);
-                    ByteBuffer nameBuffer = ByteBuffer.wrap(SelectedFile.getBytes());
-                    channel2.write(nameBuffer);
-                    FileInputStream fis = new FileInputStream(file);
-                    FileChannel fc = fis.getChannel();
-                    ByteBuffer contentBuffer = ByteBuffer.allocate(1024);
-                    while(fc.read(contentBuffer) != -1) {
-                        contentBuffer.flip();
-                        channel2.write(contentBuffer);
-                        contentBuffer.clear();
-                    }
-                    channel2.shutdownOutput();
-                        fis.close();
-                    command = (char) channel2.read(contentBuffer);
-                    contentBuffer.flip();
-                    a = new byte[command];
-                    SelectedFile.getChars(a);
-                    System.out.println(new String(a));
-                    break;
-
-                     */
                 case 'Q':
                     System.exit(0);
                     break;
-
-
                 default:
                     System.out.println("Invalid command, please try again.");
             }

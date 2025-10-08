@@ -28,9 +28,9 @@ public class project3_server {
                 case 'L': //or L
                     //commandBuffer = ByteBuffer.allocate(20);
                     //byte[] a = new byte[bytesRead];
-                    File folder = new File(".");
+                    File folder = new File("ServerFiles");
                     String[] fileNames = folder.list();
-                    StringBuilder clientMessage = new StringBuilder("Server Files: ");
+                    StringBuilder clientMessage = new StringBuilder("Server Files:\n ");
                     if (fileNames != null && fileNames.length > 0) {
                         for (String name : fileNames) {
                             clientMessage.append(name).append("\n");
@@ -51,7 +51,7 @@ public class project3_server {
                     messageBuffer.get(a);
                     String otherClientMessage = new String(a);
                     String send;
-                    File fileInFolder = new File("." , otherClientMessage);
+                    File fileInFolder = new File("ServerFiles" , otherClientMessage);
                     //fileNames = folder.list();
                     if (fileInFolder.exists() && fileInFolder.isFile()) {
                         if (fileInFolder.delete()) {
@@ -80,15 +80,15 @@ public class project3_server {
                         String oldName = parts[0];
                         String newName = parts[1];
 
-                        File oldFile = new File(".", oldName);
-                        File newFile = new File(".", newName);
+                        File oldFile = new File("ServerFiles", oldName);
+                        File newFile = new File("ServerFiles", newName);
 
                         if (oldFile.exists() && oldFile.isFile()) {
                             boolean renamed = oldFile.renameTo(newFile);
                             if (renamed) {
-                                result = "File was renamed."; // success
+                                result = "S"; // success
                             } else {
-                                result = "File wasn't renamed."; // failed
+                                result = "F"; // failed
                             }
 
                         } else {
